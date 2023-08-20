@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -30,8 +30,43 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly("com.mysql:mysql-connector-j")
+
+    implementation 'com.querydsl:querydsl-jpa:5.0.0'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jpa"
+    annotationProcessor "jakarta.annotation:jakarta-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    implementation 'javax.persistence:javax.persistence-api:2.2'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+def querydslDir = "build/generated/"
+
+tasks.named('compileJava', JavaCompile) {
+    options.compilerArgs.addAll([
+            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens", "java.base/java.io=ALL-UNNAMED",
+            "--add-opens", "java.base/java.nio=ALL-UNNAMED",
+            "--add-opens", "java.base/java.util=ALL-UNNAMED",
+            "--add-opens", "java.base/javax.crypto=ALL-UNNAMED",
+            "-s", "$projectDir/$querydslDir"
+    ])
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["$projectDir/src/main/java", "$projectDir/${querydslDir}"]
+        }
+    }
+}
+
+tasks.named("compileJava") {
+    options.compilerArgs = ["-s", "$projectDir/$querydslDir"]
+}
+
+clean {
+    delete file(querydslDir)
 }
