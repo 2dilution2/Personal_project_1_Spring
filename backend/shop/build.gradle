@@ -1,7 +1,14 @@
+buildscript {
+    ext {
+        queryDslVersion = "5.0.0"
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.1.2'
     id 'io.spring.dependency-management' version '1.1.2'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.acoustic'
@@ -15,6 +22,8 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+// querydsl이 compileClassPath를 상속하도록 설정
+    querydsl.extendsFrom compileClasspath
 }
 
 repositories {
@@ -22,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -30,43 +39,31 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly("com.mysql:mysql-connector-j")
+    implementation "com.querydsl:querydsl-jpa:5.0.3"
+    implementation "com.querydsl:querydsl-apt:5.0.3"
 
-    implementation 'com.querydsl:querydsl-jpa:5.0.0'
-    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jpa"
-    annotationProcessor "jakarta.annotation:jakarta-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-    implementation 'javax.persistence:javax.persistence-api:2.2'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-def querydslDir = "build/generated/"
+// querydsl에서 사용할 경로 설정(현재 지정한 부분은 .gitignore에 포함됨)
+def querydslDir = "$buildDir/generated/querydsl"
 
-tasks.named('compileJava', JavaCompile) {
-    options.compilerArgs.addAll([
-            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
-            "--add-opens", "java.base/java.io=ALL-UNNAMED",
-            "--add-opens", "java.base/java.nio=ALL-UNNAMED",
-            "--add-opens", "java.base/java.util=ALL-UNNAMED",
-            "--add-opens", "java.base/javax.crypto=ALL-UNNAMED",
-            "-s", "$projectDir/$querydslDir"
-    ])
+// JPA 사용 여부 및 사용할 경로 설정
+querydsl {
+    jpa = true
+    querydslSourcesDir = querydslDir
 }
 
+// build 시 사용할 sourceSet 추가 설정
 sourceSets {
-    main {
-        java {
-            srcDirs = ["$projectDir/src/main/java", "$projectDir/${querydslDir}"]
-        }
-    }
+    main.java.srcDir querydslDir
 }
 
-tasks.named("compileJava") {
-    options.compilerArgs = ["-s", "$projectDir/$querydslDir"]
+// querydsl 컴파일 시 사용할 옵션 설정
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
 }
 
-clean {
-    delete file(querydslDir)
-}
