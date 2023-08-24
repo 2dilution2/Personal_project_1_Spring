@@ -2,6 +2,9 @@ package com.acoustic.shop.product.repository;
 
 import com.acoustic.shop.product.constant.ProdSellStatus;
 import com.acoustic.shop.product.entity.Product;
+import com.acoustic.shop.product.entity.QProduct;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +13,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.acoustic.shop.product.entity.QProduct.product;
+
 @SpringBootTest
 public class ProductRepositoryTest {
+
+    @Autowired
+    EntityManager em;
 
     @Autowired
     ProductRepository productRepository;
@@ -70,6 +78,38 @@ public class ProductRepositoryTest {
         for (Product product : productList) {
             System.out.println(product.toString());
         }
+    }
+
+    @Test
+    @DisplayName("Native 쿼리")
+    public void findByProdDescNativeTest() {
+        createProdList();
+
+        List<Product> productList = productRepository.findByProdDescNative("테스트");
+
+        for (Product product : productList) {
+            System.out.println(product);
+        }
+    }
+
+    @Test
+    @DisplayName("queryDSL 테스트")
+    public void querydslTest() {
+        createProdList();
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        List<Product> list = queryFactory
+                .select(product)
+                .from(product)
+                .where(product.prodStatus.eq(ProdSellStatus.SELL))
+                .orderBy(product.prodPrice.desc())
+                .fetch();
+
+        for (Product product : list) {
+            System.out.println(product);
+        }
+
     }
 
     @Test
