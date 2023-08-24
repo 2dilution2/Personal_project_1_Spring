@@ -37,6 +37,7 @@ public class ProductRepositoryTest {
         product.setImgUrl("");
         product.setProdCreated(LocalDateTime.now());
         product.setProdUpdated(LocalDateTime.now());
+        product.setProdStatus(ProdSellStatus.SELL);
 
         Product saveProd = productRepository.save(product);
 
