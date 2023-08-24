@@ -3,12 +3,17 @@ package com.acoustic.shop.product.repository;
 import com.acoustic.shop.product.constant.ProdSellStatus;
 import com.acoustic.shop.product.entity.Product;
 import com.acoustic.shop.product.entity.QProduct;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.thymeleaf.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,7 +55,7 @@ public class ProductRepositoryTest {
         for (int i=1 ; i<=10 ; i++){
             Product product = new Product();
             product.setProdName("테스트상품" + i);
-            product.setProdName("테스트상품설명" + i);
+            product.setProdDesc("테스트상품설명" + i);
             product.setProdPrice(10000+i);
             product.setProdStock(100-1);
             product.setProdCreated(LocalDateTime.now());
@@ -109,6 +114,69 @@ public class ProductRepositoryTest {
 
         for (Product product : list) {
             System.out.println(product);
+        }
+
+    }
+
+    public void createProdList2() {
+        for (int i = 1; i <= 5 ; i++){
+            Product product = new Product();
+
+            product.setProdName("테스트상품" + i);
+            product.setProdDesc("테스트상품설명" + i);
+            product.setProdPrice(10000+i);
+            product.setProdStock(100);
+            product.setProdCreated(LocalDateTime.now());
+            product.setProdUpdated(LocalDateTime.now());
+            product.setProdStatus(ProdSellStatus.SELL);
+
+            Product savedProd = productRepository.save(product);
+        }
+
+        for (int i = 6; i <= 10 ; i++){
+            Product product = new Product();
+
+            product.setProdName("테스트상품" + i);
+            product.setProdDesc("테스트상품설명" + i);
+            product.setProdPrice(10000+i);
+            product.setProdStock(0);
+            product.setProdCreated(LocalDateTime.now());
+            product.setProdUpdated(LocalDateTime.now());
+            product.setProdStatus(ProdSellStatus.SOLD_OUT);
+
+            Product savedProd = productRepository.save(product);
+        }
+    }
+
+    @Test
+    @DisplayName("queryDSL 테스트2")
+    public void querydslTest2() {
+        createProdList2();
+
+        String prodDesc = "테스트";
+        int prodPrice = 10003;
+        String prodSellState = "SELL";
+
+        QProduct product = QProduct.product;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(product.prodDesc.like("%" + prodDesc + "%"));
+        builder.and(product.prodPrice.gt(prodPrice));
+
+        if (StringUtils.equals(prodSellState, ProdSellStatus.SELL)) {
+            builder.and(product.prodStatus.eq(ProdSellStatus.SELL));
+        }
+
+        Pageable pageable = PageRequest.of(0, 5);
+
+        Page<Product> findAll = productRepository.findAll(builder, pageable);
+
+        System.out.println("전체 개수 : " + findAll.getTotalElements());
+
+        List<Product> content = findAll.getContent();
+        for (Product product1 : content) {
+            System.out.println(product1);
         }
 
     }
