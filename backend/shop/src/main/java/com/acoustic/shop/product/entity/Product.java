@@ -1,5 +1,6 @@
 package com.acoustic.shop.product.entity;
 
+import com.acoustic.shop.category.entity.Category;
 import com.acoustic.shop.product.constant.ProdSellStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,8 +20,9 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long prodId;               // 상품번호
 
-    @Column(nullable = false)
-    private long categoryId;           // 카테고리 번호
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="categoryId")
+    private Category categoryId;           // 카테고리 번호
 
     @Column(nullable = false)
     private String prodName;           // 상품명

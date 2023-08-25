@@ -34,7 +34,6 @@ public class ProductRepositoryTest {
     public void createProductTest() {
         Product product = new Product();
 
-        product.setCategoryId(123);
         product.setProdName("테스트 상품");
         product.setProdDesc("");
         product.setProdPrice(10000);
