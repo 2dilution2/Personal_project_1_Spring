@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th = "http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello World</title>
+</head>
+<body>
+    <h1>상품정보 리스트</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <td>번호</td>
+                <td>상품명</td>
+                <td>상품설명</td>
+                <td>상품가격</td>
+                <td>상품재고</td>
+                <td>상품등록일</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="prodDto, status : ${list}">
+                <td th:text="${status.index}"/>
+                <td th:text="${prodDto.prodName}"/>
+                <td th:text="${prodDto.prodDesc}"/>
+                <td th:text="${prodDto.prodPrice}"/>
+                <td th:text="${prodDto.prodStock}"/>
+                <td th:text="${prodDto.prodCreated}"/>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
